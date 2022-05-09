@@ -1,15 +1,16 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const {validationResult} = require('express-validator')
+const bcrypt = require('bcrypt');
+
 
 
 exports.signup = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // res.setHeader('Access-Control-Allow-Origin', '*');
 
 
     //Check user 
     User.findOne({email: req.body.email})
-    .exec((error, user) => {
+    .exec(async(error, user) => {
         if(user) return res.status(400).json({
             message: 'User already registered'
         });
@@ -21,12 +22,14 @@ exports.signup = (req, res) => {
             password
         } = req.body;
 
+        const hash_password = await bcrypt.hash(password, 10);
+
         const _user = new User ({
             firstName, 
             lastName, 
             email, 
-            password,
-            username: Math.random().toString()
+            hash_password,
+            username: shortId.generate()
         });
 
         _user.save((error, data) => {
@@ -46,7 +49,7 @@ exports.signup = (req, res) => {
 };
 
 exports.signin = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // res.setHeader('Access-Control-Allow-Origin', '*');
 
     User.findOne({email: req.body.email})
     .exec((error, user) => {

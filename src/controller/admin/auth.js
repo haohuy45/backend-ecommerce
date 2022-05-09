@@ -1,11 +1,13 @@
 const User = require('../../models/user');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const shortId = require('shortid')
 
 
 exports.signup = (req, res) => {
     //Check admin 
     User.findOne({email: req.body.email})
-    .exec((error, user) => {
+    .exec(async(error, user) => {
         if(user) return res.status(400).json({
             message: 'Admin already registered'
         });
@@ -17,12 +19,14 @@ exports.signup = (req, res) => {
             password
         } = req.body;
 
+        const hash_password = await bcrypt.hash(password, 10);
+
         const _user = new User ({
             firstName, 
             lastName, 
             email, 
-            password,
-            username: Math.random().toString(),
+            hash_password,
+            username: shortId.generate(),
             role: 'admin'
         });
 
